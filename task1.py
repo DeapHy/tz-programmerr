@@ -1,88 +1,121 @@
 import sys
 from random import randint
 
-class Task1():
+# Параметры для случайной генерации
+minCityCount = 1     # Минимальное количество городов
+maxCityCount = 100   # Максимальное количество городов
+minRoadsCount = 1    # Минимальное количество дорог
+maxRoadsCount = 100  # Максимальное количество дорог
+
+# Класс город, храняций информацию о конкретном городе
+class City:
+    def __init__(self, ind: int):
+        self.cityIndex = ind                # Индекс города
+        self.connections = list()           # Индексы других городов с которыми соединенен текущий город
+
+    # Красивый вывод информации о городе
+    def __repr__(self) -> str:
+        return f"Город {self.cityIndex}"
+
+    # Добавление дороги в другой город
+    def addConnection(self, ind: int) -> None:
+        self.connections.append(ind)
+
+    # Получение всех дорог, с которым соединенен данный город
+    def getConnections(self) -> list:
+        return self.connections
+    
+# Класс штат, хранящий информацию о конкретном штате
+class State:
     def __init__(self):
+        self.cities = list()        # Города, которые входят в штат
 
-        # Параметры для случайной генерации
-        self.__minPrice = 1         # Минимальная цена цыпленка
-        self.__maxPrice = 10000     # Максимальная цена цыпленка
-        self.__maxNominals = 10     # Максимальное количество номиналов
-        self.__minNominal = 1       # Минимальное значение номинала
-        self.__maxNominal = 100     # Максимальное значение номинала
+    # Вывод содержимого штата (городов, входящих в этот штат, по большей части для тестов)
+    def __repr__(self) -> str:
+        return f"{self.cities}"
 
-    # Определение возможности покупки цыпленка при заданных номиналах
-    def isBuyable(self, nominals: list, target: int) -> bool:
-        current = 0
-        high = nominals[-1]
-        low = nominals[0]
-        for i in range(1, len(nominals)):
-            current = 0
-            while (current < target) and (current >= 0):
-                if current + high > target:
-                    for el in nominals:
-                        if current + el == target:
-                            return True
-                current += high
-            immutableCurrent = current
-            for j in range(0, len(nominals)):
-                current = immutableCurrent
-                if i == j:
-                    continue
-                low = nominals[j]
-                while (current >= target) and (current > 0):
-                    if current == target:
-                        return True
-                    current = current - low if low > 0 else current + low
-            high = nominals[-i-1]
-        return False
+    # Получение списка городов, входящих в данный штат
+    def getCities(self) -> list:
+        return self.cities
+    
+    # Добавление нового города в штат
+    def addCity(self, cty: City) -> None:
+        self.cities.append(cty)
 
-    # Функция для получения из входных данных цены цыпленка и количества предложений, а также запуска функции find для каждого предложения
-    def calculate(self, inp: str):
-        data = inp.split("\n")
-        [price, n] = [int(x) for x in data[0].split(" ")]
-        print(f"Начальные параметры:\nЦена = {price}, Количество предложений = {n}\n===============")
-        for i in range(n):
-            nominals = [int(x) for x in data[i+1].split(" ")]
-            print(nominals)
-            nominals.extend([-int(x) for x in data[i+1].split(" ")])
-            for i in range(len(nominals)):
-                for j in range(len(nominals)):
-                    if i != j and nominals[i] + nominals[j] != 0 and nominals[i] + nominals[j] not in nominals:
-                        nominals.append(nominals[i] + nominals[j])
-            nominals.sort()
-            print("yes" if self.isBuyable(nominals, price) else "no")
+# Основной класс программы
+class Task1:
+    def __init__(self, inp: str) -> None:
+        tempData = inp.split("\n")
+        self.cityCount, self.roadCount = [int(x) for x in tempData[0].split(" ")]   # Загрузка основной информации
+        self.roads = [[int(y) for y in x.split(" ")] for x in tempData[1::]]        # Загрузка списка всех дорог
+        self.cities = [City(i) for i in range(self.cityCount)]                      # Создание объектов под каждый город
+        self.states = list()                                                        # Создание пустого списка штатов
 
-    # Функция для генерации теста (используется при запуске в режиме "Случайная генерация примера")
-    def generateTest(self, count: int) -> str:
-        output = f"{randint(self.__minPrice, self.__maxPrice)} {count}"
-        for i in range(count):
-            output += "\n"
-            nominalsCount = randint(1, self.__maxNominals)
-            testCase = []
-            while len(testCase) < nominalsCount:
-                nominal = randint(self.__minNominal, self.__maxNominal)
-                if nominal not in testCase:
-                    testCase.append(nominal) 
-            output += " ".join([str(i) for i in testCase])
-        return output
+    # Соединение городов дорогами
+    def connectCities(self) -> None:
+        for road in self.roads:  
+            self.cities[road[0]].addConnection(road[1])         # Двустороннее объединение городов                       
+            self.cities[road[1]].addConnection(road[0])         # Двустороннее объединение городов
+
+    # Выполнение задания
+    def run(self) -> int:
+        self.connectCities()                            # Загрузка всех дорог
+        state = State()                                 # По крайней мере должен существовать 1 штат
+        state.addCity(self.cities[0])                   # С 1 городом в нем
+        self.states.append(state)                       # Штат добавляется в общий список штатов
+        for i in range(1, self.cityCount):              # Для каждого города кроме первого
+            flag = False                                # Сброс флага
+            for state in self.states:                   # Для каждого штата
+                for city in state.getCities():          # Для каждого города в штате
+                    if i in city.getConnections():      # Если индекс города присутствует в любом городе штата (в этот город есть дорога)
+                        state.addCity(self.cities[i])   # Город добавляется в данный штат
+                        flag = True                     # Устанавливаем, что город добавился в какой-либо штат
+                        break                           # Выход из цикла по городам штата
+                    if flag:                            # Если город добавился в какой-либо штат, то нет необходимости смотреть другие штаты
+                        break                           # Выход из цикла по штатам
+            if not flag:                                # Если гроод никуда не добавился
+                state = State()                         # Создается новый штат
+                state.addCity(self.cities[i])           # Куда добавляется этот город
+                self.states.append(state)               # Штат добавляется в список штатов
+
+        return len(self.states)                         # Длина списка штатов является ответом
+    
+def generateTest():
+    roadCount = randint(minRoadsCount, maxRoadsCount)
+    cityCount = randint(minCityCount, maxCityCount)
+    output = f"{cityCount} {roadCount}"
+    for i in range(roadCount):
+        output += "\n"
+        temp = [int(randint(0, cityCount-1)) for x in range(2)]
+
+        output += " ".join([str(i) for i in temp])
+    print(output)
+    return output
+
 
 def main(argv: list):
     try:
-        task = Task1()
         if "-r" in argv and not '-f' in argv:
-            index = argv.index("-r")
-            count = int(argv[index+1])
-            inp = task.generateTest(count)
+            inp = generateTest()
         elif "-f" in argv and not "-r" in argv:
             with open("testForTask1.txt", "r") as file:
                 inp = file.read()
         else:
             raise ValueError
-        task.calculate(inp)
+        task = Task1(inp)
+        print(task.run())
     except Exception as e:
-        print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r <число предложений>)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 t.py -r 4\nПример чтения из файла: python3 t.py -f\n")
+        print(e.with_traceback())
+        print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 task1.py -r\nПример чтения из файла: python3 task1.py -f\n")
         return
 
 if __name__ == "__main__":
     main(sys.argv)
+# if __name__ == "__main__":
+#     inp = """6 4
+# 3 1
+# 1 2
+# 5 4
+# 2 3"""
+#     t = Task1(inp)
+#     t.run()
