@@ -58,7 +58,6 @@ def main(argv: list):
     try:
         if "-r" in argv and not '-f' in argv:
             index = argv.index("-r")
-            #IndexError
             count = int(argv[index+1])
             print(count)
             inp = generateTest(count)
@@ -69,7 +68,7 @@ def main(argv: list):
             raise ValueError
         calculate(inp)
     except:
-        print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r <число предложений>)\n\t- Чтение примера из файла (-f)\nПример случайно генерации: python3 t.py -r 4\nПример чтения из файла: python3 t.py -f\n")
+        print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r <число предложений>)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 t.py -r 4\nПример чтения из файла: python3 t.py -f\n")
         return
 
 if __name__ == "__main__":
