@@ -48,7 +48,7 @@ class Task1():
             nominals.extend([-int(x) for x in data[i+1].split(" ")])
             for i in range(len(nominals)):
                 for j in range(len(nominals)):
-                    if i != j and nominals[i] + nominals[j] != 0:
+                    if i != j and nominals[i] + nominals[j] != 0 and nominals[i] + nominals[j] not in nominals:
                         nominals.append(nominals[i] + nominals[j])
             nominals.sort()
             print("yes" if self.isBuyable(nominals, price) else "no")
@@ -59,7 +59,11 @@ class Task1():
         for i in range(count):
             output += "\n"
             nominalsCount = randint(1, self.__maxNominals)
-            testCase = [randint(self.__minNominal, self.__maxNominal) for i in range(nominalsCount)]
+            testCase = []
+            while len(testCase) < nominalsCount:
+                nominal = randint(self.__minNominal, self.__maxNominal)
+                if nominal not in testCase:
+                    testCase.append(nominal) 
             output += " ".join([str(i) for i in testCase])
         return output
 
@@ -71,7 +75,7 @@ def main(argv: list):
             count = int(argv[index+1])
             inp = task.generateTest(count)
         elif "-f" in argv and not "-r" in argv:
-            with open("test.txt", "r") as file:
+            with open("testForTask1.txt", "r") as file:
                 inp = file.read()
         else:
             raise ValueError
@@ -81,10 +85,4 @@ def main(argv: list):
         return
 
 if __name__ == "__main__":
-    # t = Task1()
-#     inp = """241 1
-# 94 73 68 16"""
-#     t.calculate(inp)
-#     #print(t.isBuyable([94, 73, 68, 16], 241))
-    
     main(sys.argv)
