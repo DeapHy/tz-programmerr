@@ -92,7 +92,6 @@ def generateTest():
     print(output)
     return output
 
-
 def main(argv: list):
     try:
         if "-r" in argv and not '-f' in argv:
@@ -105,17 +104,8 @@ def main(argv: list):
         task = Task1(inp)
         print(task.run())
     except Exception as e:
-        print(e.with_traceback())
         print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 task1.py -r\nПример чтения из файла: python3 task1.py -f\n")
         return
 
 if __name__ == "__main__":
     main(sys.argv)
-# if __name__ == "__main__":
-#     inp = """6 4
-# 3 1
-# 1 2
-# 5 4
-# 2 3"""
-#     t = Task1(inp)
-#     t.run()
