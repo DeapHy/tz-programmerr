@@ -1,75 +1,90 @@
 import sys
 from random import randint
 
-minPrice = 1
-maxPrice = 10000
-maxNominals = 10
-minNominal = 1
-maxNominal = 100
+class Task1():
+    def __init__(self):
 
-def find(nominals: list, target: int):
-    current = 0
-    high = nominals[-1]
-    low = nominals[0]
-    for i in range(1, len(nominals)):
+        # Параметры для случайной генерации
+        self.__minPrice = 1         # Минимальная цена цыпленка
+        self.__maxPrice = 10000     # Максимальная цена цыпленка
+        self.__maxNominals = 10     # Максимальное количество номиналов
+        self.__minNominal = 1       # Минимальное значение номинала
+        self.__maxNominal = 100     # Максимальное значение номинала
+
+    # Определение возможности покупки цыпленка при заданных номиналах
+    def isBuyable(self, nominals: list, target: int) -> bool:
         current = 0
-        while (current < target) and (current >= 0):
-            if current + high > target:
-                for el in nominals:
-                    if current + el == target:
-                        print("yes")
-                        return
-            current += high
-        immutableCurrent = current
-        for j in range(0, len(nominals)):
-            current = immutableCurrent
-            if i == j:
-                continue
-            low = nominals[j]
-            while (current >= target) and (current > 0):
-                if current == target:
-                    print("yes")
-                    return
-                current = current - low if low > 0 else current + low
-        high = nominals[-i-1]
-    print("no")
+        high = nominals[-1]
+        low = nominals[0]
+        for i in range(1, len(nominals)):
+            current = 0
+            while (current < target) and (current >= 0):
+                if current + high > target:
+                    for el in nominals:
+                        if current + el == target:
+                            return True
+                current += high
+            immutableCurrent = current
+            for j in range(0, len(nominals)):
+                current = immutableCurrent
+                if i == j:
+                    continue
+                low = nominals[j]
+                while (current >= target) and (current > 0):
+                    if current == target:
+                        return True
+                    current = current - low if low > 0 else current + low
+            high = nominals[-i-1]
+        return False
 
-def calculate(inp: str):
-    data = inp.split("\n")
-    [price, n] = [int(x) for x in data[0].split(" ")]
-    print(f"Начальные параметры:\nЦена = {price}, Количество предложений = {n}\n===============")
-    for i in range(n):
-        nominals = [int(x) for x in data[i+1].split(" ")]
-        print(nominals)
-        nominals.extend([-int(x) for x in data[i+1].split(" ")])
-        nominals.sort()
-        find(nominals, price)
+    # Функция для получения из входных данных цены цыпленка и количества предложений, а также запуска функции find для каждого предложения
+    def calculate(self, inp: str):
+        data = inp.split("\n")
+        [price, n] = [int(x) for x in data[0].split(" ")]
+        print(f"Начальные параметры:\nЦена = {price}, Количество предложений = {n}\n===============")
+        for i in range(n):
+            nominals = [int(x) for x in data[i+1].split(" ")]
+            print(nominals)
+            nominals.extend([-int(x) for x in data[i+1].split(" ")])
+            for i in range(len(nominals)):
+                for j in range(len(nominals)):
+                    if i != j and nominals[i] + nominals[j] != 0:
+                        nominals.append(nominals[i] + nominals[j])
+            nominals.sort()
+            print("yes" if self.isBuyable(nominals, price) else "no")
 
-def generateTest(count: int) -> str:
-    output = f"{randint(minPrice, maxPrice)} {count}"
-    for i in range(count):
-        output += "\n"
-        nominalsCount = randint(1, maxNominals)
-        testCase = [randint(minNominal, maxNominal) for i in range(nominalsCount)]
-        output += " ".join([str(i) for i in testCase])
-    return output
+    # Функция для генерации теста (используется при запуске в режиме "Случайная генерация примера")
+    def generateTest(self, count: int) -> str:
+        output = f"{randint(self.__minPrice, self.__maxPrice)} {count}"
+        for i in range(count):
+            output += "\n"
+            nominalsCount = randint(1, self.__maxNominals)
+            testCase = [randint(self.__minNominal, self.__maxNominal) for i in range(nominalsCount)]
+            output += " ".join([str(i) for i in testCase])
+        return output
 
 def main(argv: list):
     try:
+        task = Task1()
         if "-r" in argv and not '-f' in argv:
             index = argv.index("-r")
             count = int(argv[index+1])
-            print(count)
-            inp = generateTest(count)
+            inp = task.generateTest(count)
         elif "-f" in argv and not "-r" in argv:
             with open("test.txt", "r") as file:
                 inp = file.read()
         else:
             raise ValueError
-        calculate(inp)
-    except:
+        task.calculate(inp)
+    except Exception as e:
         print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r <число предложений>)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 t.py -r 4\nПример чтения из файла: python3 t.py -f\n")
         return
 
 if __name__ == "__main__":
+    # t = Task1()
+#     inp = """241 1
+# 94 73 68 16"""
+#     t.calculate(inp)
+#     #print(t.isBuyable([94, 73, 68, 16], 241))
+    
     main(sys.argv)
