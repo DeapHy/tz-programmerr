@@ -96,7 +96,6 @@ def main(argv: list):
         print("Неверный формат входных данных")
         return
     except Exception as e:
-        print(e)
         print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r <число предложений>)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 task2.py -r 4\nПример чтения из файла: python3 task2.py -f\n")
         return
 
