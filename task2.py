@@ -10,6 +10,9 @@ class Task2:
         self.__maxNominals = 10     # Максимальное количество номиналов
         self.__minNominal = 1       # Минимальное значение номинала
         self.__maxNominal = 100     # Максимальное значение номинала
+        self.__price = 0            # Цена за цыпленка
+        self.__offers = 0           # Количество предложений
+        self.__data = list()
 
     # Определение возможности покупки цыпленка при заданных номиналах
     def isBuyable(self, nominals: list, target: int) -> bool:
@@ -37,21 +40,30 @@ class Task2:
             high = nominals[-i-1]
         return False
 
+    # Проверка данных
+    def checkData(self, inp: str):
+        self.__data = inp.split("\n")
+        if len(self.__data[0].split(" ")) != 2:
+            raise ValueError
+        
+        [self.__price, self.__offers] = [int(x) for x in self.__data[0].split(" ")]
+        if self.__offers != len(self.__data[1::]):
+            raise ValueError
+    
     # Функция для получения из входных данных цены цыпленка и количества предложений, а также запуска функции find для каждого предложения
     def calculate(self, inp: str):
-        data = inp.split("\n")
-        [price, n] = [int(x) for x in data[0].split(" ")]
-        print(f"Начальные параметры:\nЦена = {price}, Количество предложений = {n}\n===============")
-        for i in range(n):
-            nominals = [int(x) for x in data[i+1].split(" ")]
+        self.checkData(inp)
+        print(f"Начальные параметры:\nЦена = {self.__price}, Количество предложений = {self.__offers}\n===============")
+        for i in range(self.__offers):
+            nominals = [int(x) for x in self.__data[i+1].split(" ")]
             print(nominals)
-            nominals.extend([-int(x) for x in data[i+1].split(" ")])
+            nominals.extend([-int(x) for x in self.__data[i+1].split(" ")])
             for i in range(len(nominals)):
                 for j in range(len(nominals)):
                     if i != j and nominals[i] + nominals[j] != 0 and nominals[i] + nominals[j] not in nominals:
                         nominals.append(nominals[i] + nominals[j])
             nominals.sort()
-            print("yes" if self.isBuyable(nominals, price) else "no")
+            print("yes" if self.isBuyable(nominals, self.__price) else "no")
 
     # Функция для генерации теста (используется при запуске в режиме "Случайная генерация примера")
     def generateTest(self, count: int) -> str:
@@ -78,10 +90,13 @@ def main(argv: list):
             with open("testForTask2.txt", "r") as file:
                 inp = file.read()
         else:
-            raise ValueError
+            raise AttributeError
         task.calculate(inp)
+    except ValueError as exc:
+        print("Неверный формат входных данных")
+        return
     except Exception as e:
-        print(e.with_traceback())
+        print(e)
         print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r <число предложений>)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 task2.py -r 4\nПример чтения из файла: python3 task2.py -f\n")
         return
 
