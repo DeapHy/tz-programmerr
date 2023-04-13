@@ -45,11 +45,32 @@ class State:
 # Основной класс программы
 class Task1:
     def __init__(self, inp: str) -> None:
+        self.loadData(inp)              # Загрузка и проверка данных
+        self.states = list()            # Создание пустого списка штатов
+
+    # Загрузка информации и проверка правильности
+    def loadData(self, inp: str) -> None:
         tempData = inp.split("\n")
+
+        # Проверка на то, что передано ровно 2 начальных параметра задания
+        if len(tempData[0].split(" ")) != 2:
+            raise ValueError
+        
         self.cityCount, self.roadCount = [int(x) for x in tempData[0].split(" ")]   # Загрузка основной информации
+
+        # Проверка на то, что в каждой дороге ровно 2 города
+        for element in tempData[1::]:
+            if len(element.split(" ")) != 2:
+                raise ValueError
+        
+        # Проверка на то, что количество дорог в параметрах задания соответствует фактическому кол-ву дорог
+        if self.roadCount != len(tempData[1::]):
+            raise ValueError
+
         self.roads = [[int(y) for y in x.split(" ")] for x in tempData[1::]]        # Загрузка списка всех дорог
         self.cities = [City(i) for i in range(self.cityCount)]                      # Создание объектов под каждый город
-        self.states = list()                                                        # Создание пустого списка штатов
+        
+
 
     # Соединение городов дорогами
     def connectCities(self) -> None:
@@ -100,9 +121,11 @@ def main(argv: list):
             with open("testForTask1.txt", "r") as file:
                 inp = file.read()
         else:
-            raise ValueError
+            raise AttributeError
         task = Task1(inp)
         print(task.run())
+    except (ValueError, IndexError) as exc:
+        print("Неверный формат входных данных")
     except Exception as e:
         print("\nДанный скрипт работает в двух режимах:\n\t- Случайная генерация примера (-r)\n\t- Чтение примера из файла (-f)\nПример случайной генерации: python3 task1.py -r\nПример чтения из файла: python3 task1.py -f\n")
         return
